@@ -18,7 +18,13 @@ python manage.py runserver
 ```
 
 Copy `.env.example` to `.env` (or set the equivalent environment variables)
-to override `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`.
+to override `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`,
+`DJANGO_CSRF_TRUSTED_ORIGINS`, and `DJANGO_SECURE_SSL`.
+
+For an HTTPS deployment, set `DJANGO_DEBUG=False`, use a long random
+`DJANGO_SECRET_KEY`, add the public hostname to `DJANGO_ALLOWED_HOSTS`, add
+its full `https://` origin to `DJANGO_CSRF_TRUSTED_ORIGINS`, and set
+`DJANGO_SECURE_SSL=True`.
 
 ## Demo data
 
