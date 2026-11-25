@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Lead Assignment{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5 tw-flex-wrap tw-gap-3">
+  <h1 class="tw-text-xl tw-font-bold">Lead Assignment Workspace</h1>
+  <div class="tw-flex tw-gap-2">
+    <a href="{% url 'assignments:course_based' %}" class="clay-button clay-button--ghost">
+      <span class="material-symbols-outlined">menu_book</span> Course-Based Assignment
+    </a>
+    <a href="{% url 'assignments:history' %}" class="clay-button clay-button--ghost">
+      <span class="material-symbols-outlined">history</span> Assignment History
+    </a>
+  </div>
+</div>
+
+<div class="tw-grid lg:tw-grid-cols-4 tw-gap-4 tw-mb-5">
+  {% include "components/clay_card.html" with icon="group" label="Available Leads" value=total_available color="blue" %}
+  {% include "components/clay_card.html" with icon="support_agent" label="Active Telecallers" value=telecallers|length color="purple" %}
+</div>
+
+<form method="get" class="tw-flex tw-gap-3 tw-mb-4 tw-flex-wrap">
+  <label class="tw-flex tw-items-center tw-gap-2 tw-text-sm">
+    <input type="checkbox" name="unassigned" value="1" {% if only_unassigned %}checked{% endif %} onchange="this.form.submit()"> Unassigned only
+  </label>
+  <select name="course" class="clay-input" style="max-width:220px;" onchange="this.form.submit()">
+    <option value="">All courses</option>
+    {% for c in courses %}<option value="{{ c.pk }}" {% if request.GET.course == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+  </select>
+</form>
+
+<form method="post" action="{% url 'assignments:assign_confirm' %}" id="assignForm">
+  {% csrf_token %}
+  <input type="hidden" name="lead_ids" id="leadIdsField">
+
+  <div class="clay-table-wrap tw-mb-5">
+    <table class="clay-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="selectAll"></th>
+          <th>Student</th>
+          <th>Mobile</th>
+          <th>Course</th>
+          <th>Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lead in page_obj %}
+        <tr>
+          <td><input type="checkbox" class="lead-checkbox" value="{{ lead.pk }}"></td>
+          <td>{{ lead.student_name }}</td>
+          <td>{{ lead.student_phone }}</td>
+          <td>{{ lead.interested_course|default:"—" }}</td>
+          <td>{{ lead.current_owner|default:"Unassigned" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="clay-empty-state">No leads match this filter.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pagination.html" with page_obj=page_obj %}
+
+  <div class="clay-card tw-mt-5">
+    <h2 class="tw-font-bold tw-mb-3">Assignment Preview</h2>
+    <p class="tw-text-sm tw-mb-4" style="color:var(--clay-text-muted);">
+      Selected leads: <strong id="selectedCount">0</strong>
+    </p>
+
+    <div class="tw-grid md:tw-grid-cols-2 tw-gap-4">
+      <div class="clay-field">
+        <label>Assignment Method</label>
+        <select name="method" id="methodSelect" class="clay-input" onchange="clayUpdateMethodUI()">
+          {% for value, label in methods %}
+            {% if value != 'course_based' %}<option value="{{ value }}">{{ label }}</option>{% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="clay-field" id="singleTelecallerField">
+        <label>Telecaller</label>
+        <select name="single_telecaller" class="clay-input">
+          {% for t in telecallers %}
+            <option value="{{ t.pk }}">{{ t.get_full_name|default:t.username }} ({{ t.active_count }} active)</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="clay-field tw-hidden md:tw-col-span-2" id="multiTelecallerField">
+        <label>Telecallers (hold Ctrl/Cmd to multi-select)</label>
+        <select name="telecallers" multiple class="clay-input" size="6">
+          {% for t in telecallers %}
+            <option value="{{ t.pk }}">{{ t.get_full_name|default:t.username }} — {{ t.telecaller_profile.max_active_leads|default:200 }} capacity</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="clay-field md:tw-col-span-2">
+        <label>Notes (optional)</label>
+        <input type="text" name="notes" class="clay-input" placeholder="e.g. November campaign distribution">
+      </div>
+    </div>
+
+    <button type="submit" class="clay-button clay-button--primary tw-mt-2" id="confirmBtn" disabled>
+      <span class="material-symbols-outlined">task_alt</span> Confirm Assignment
+    </button>
+  </div>
+</form>
+
+<script>
+  function clayUpdateMethodUI() {
+    var method = document.getElementById('methodSelect').value;
+    var multiMethods = ['equal_distribution', 'round_robin', 'capacity_based'];
+    document.getElementById('multiTelecallerField').classList.toggle('tw-hidden', !multiMethods.includes(method));
+    document.getElementById('singleTelecallerField').classList.toggle('tw-hidden', multiMethods.includes(method));
+  }
+
+  function clayUpdateSelection() {
+    var boxes = document.querySelectorAll('.lead-checkbox:checked');
+    var ids = Array.from(boxes).map(function (b) { return b.value; });
+    document.getElementById('leadIdsField').value = ids.join(',');
+    document.getElementById('selectedCount').textContent = ids.length;
+    document.getElementById('confirmBtn').disabled = ids.length === 0;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    clayUpdateMethodUI();
+    document.querySelectorAll('.lead-checkbox').forEach(function (cb) {
+      cb.addEventListener('change', clayUpdateSelection);
+    });
+    document.getElementById('selectAll').addEventListener('change', function (e) {
+      document.querySelectorAll('.lead-checkbox').forEach(function (cb) { cb.checked = e.target.checked; });
+      clayUpdateSelection();
+    });
+    document.getElementById('assignForm').addEventListener('submit', function (e) {
+      if (!document.getElementById('leadIdsField').value) {
+        e.preventDefault();
+        clayToast('Select at least one lead first.', 'warning');
+      }
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Courses{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5">
+  <h1 class="tw-text-xl tw-font-bold">Course Management</h1>
+  {% if user.role == 'super_admin' or user.role == 'college_admin' %}
+  <a href="{% url 'courses:create' %}" class="clay-button clay-button--primary">
+    <span class="material-symbols-outlined">add</span> Add Course
+  </a>
+  {% endif %}
+</div>
+
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Code</th>
+        <th>Duration</th>
+        <th>Seats</th>
+        <th>Session</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for course in courses %}
+      <tr>
+        <td>{{ course.name }}</td>
+        <td>{{ course.code }}</td>
+        <td>{{ course.duration|default:"—" }}</td>
+        <td>{{ course.available_seats }} / {{ course.total_seats }}</td>
+        <td>{{ course.academic_session|default:"—" }}</td>
+        <td>
+          {% if course.is_active %}
+            <span class="clay-badge clay-badge--success">Active</span>
+          {% else %}
+            <span class="clay-badge clay-badge--neutral">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="tw-flex tw-gap-2">
+          {% if user.role == 'super_admin' or user.role == 'college_admin' %}
+          <a href="{% url 'courses:edit' course.pk %}" class="clay-button clay-button--sm clay-button--ghost">Edit</a>
+          <form method="post" action="{% url 'courses:toggle_active' course.pk %}">
+            {% csrf_token %}
+            <button class="clay-button clay-button--sm clay-button--ghost">{% if course.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="clay-empty-state">No courses yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

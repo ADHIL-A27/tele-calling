@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Import Students{% endblock %}
+{% block content %}
+<div class="tw-grid lg:tw-grid-cols-3 tw-gap-5">
+  <div class="lg:tw-col-span-2">
+    <h1 class="tw-text-xl tw-font-bold tw-mb-4">Import Student Numbers</h1>
+    <div class="clay-card">
+      <p class="tw-text-sm tw-mb-4" style="color:var(--clay-text-muted);">
+        Upload a CSV or Excel (.xlsx) file. Only the student phone number is required —
+        all other columns are optional. You'll preview and map columns before anything is saved.
+      </p>
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="clay-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+        <button type="submit" class="clay-button clay-button--primary tw-w-full">
+          <span class="material-symbols-outlined">upload</span> Upload &amp; Preview
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="tw-font-bold tw-mb-4">Recent Imports</h2>
+    {% for batch in recent_batches %}
+      <div class="clay-card clay-card--compact tw-mb-3">
+        <div class="tw-font-semibold tw-text-sm">{{ batch.original_filename }}</div>
+        <div class="tw-text-xs tw-mb-2" style="color:var(--clay-text-soft);">{{ batch.created_at|date:"d M, H:i" }} · {{ batch.uploaded_by }}</div>
+        <span class="clay-badge clay-badge--{% if batch.status == 'completed' %}success{% elif batch.status == 'failed' %}danger{% else %}warning{% endif %}">{{ batch.get_status_display }}</span>
+        {% if batch.status == 'completed' %}
+          <a href="{% url 'leads:import_report' batch.pk %}" class="tw-text-xs tw-font-semibold tw-ml-2" style="color:#5a74d6;">View report</a>
+        {% elif batch.status == 'previewed' %}
+          <a href="{% url 'leads:import_summary' batch.pk %}" class="tw-text-xs tw-font-semibold tw-ml-2" style="color:#5a74d6;">Resume</a>
+        {% else %}
+          <a href="{% url 'leads:import_preview' batch.pk %}" class="tw-text-xs tw-font-semibold tw-ml-2" style="color:#5a74d6;">Continue</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="tw-text-sm" style="color:var(--clay-text-muted);">No imports yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

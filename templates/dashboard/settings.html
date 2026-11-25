@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="tw-max-w-xl">
+  <h1 class="tw-text-xl tw-font-bold tw-mb-4">System Settings</h1>
+  <div class="clay-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="clay-field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="clay-button clay-button--primary tw-w-full">Save Settings</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

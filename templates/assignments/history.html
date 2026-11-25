@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Assignment History{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-4">Assignment History</h1>
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead><tr><th>Batch</th><th>Method</th><th>Performed By</th><th>Leads</th><th>Telecallers</th><th>Date</th></tr></thead>
+    <tbody>
+      {% for batch in page_obj %}
+      <tr>
+        <td>#{{ batch.pk }}</td>
+        <td><span class="clay-badge clay-badge--info">{{ batch.get_method_display }}</span></td>
+        <td>{{ batch.performed_by }}</td>
+        <td>{{ batch.lead_count }}</td>
+        <td>{{ batch.telecaller_count }}</td>
+        <td>{{ batch.created_at|date:"d M Y, H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="clay-empty-state">No assignments made yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" with page_obj=page_obj %}
+{% endblock %}

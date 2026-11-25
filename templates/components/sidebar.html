@@ -1,0 +1,100 @@
+{% load static %}
+<aside class="clay-sidebar" id="claySidebar">
+  <div class="clay-sidebar__brand">
+    <span class="material-symbols-outlined">school</span>
+    <span class="brand-text">Admission CRM</span>
+  </div>
+
+  <a href="{% url 'dashboard:home' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'dashboard' %}is-active{% endif %}">
+    <span class="material-symbols-outlined">space_dashboard</span>
+    <span class="clay-sidebar__label">Dashboard</span>
+  </a>
+
+  {% if user.role in management_roles %}
+    <div class="clay-sidebar__section">Leads</div>
+    <a href="{% url 'leads:list' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'leads' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">contacts</span>
+      <span class="clay-sidebar__label">Student Leads</span>
+    </a>
+    <a href="{% url 'leads:import_start' %}" class="clay-sidebar__link">
+      <span class="material-symbols-outlined">upload_file</span>
+      <span class="clay-sidebar__label">Import Students</span>
+    </a>
+    <a href="{% url 'assignments:workspace' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'assignments' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">assignment_ind</span>
+      <span class="clay-sidebar__label">Lead Assignment</span>
+    </a>
+    <a href="{% url 'accounts:team_list' %}" class="clay-sidebar__link">
+      <span class="material-symbols-outlined">groups</span>
+      <span class="clay-sidebar__label">Telecaller Management</span>
+    </a>
+
+    <div class="clay-sidebar__section">Operations</div>
+    <a href="{% url 'telecalling:activity' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'telecalling' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">call</span>
+      <span class="clay-sidebar__label">Calling Activity</span>
+    </a>
+    <a href="{% url 'followups:list' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'followups' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">event_repeat</span>
+      <span class="clay-sidebar__label">Follow-ups</span>
+    </a>
+    <a href="{% url 'admissions:pipeline' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'admissions' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">timeline</span>
+      <span class="clay-sidebar__label">Admission Pipeline</span>
+    </a>
+    <a href="{% url 'courses:list' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'courses' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">menu_book</span>
+      <span class="clay-sidebar__label">Course Management</span>
+    </a>
+
+    <div class="clay-sidebar__section">Insights</div>
+    <a href="{% url 'dashboard:performance' %}" class="clay-sidebar__link">
+      <span class="material-symbols-outlined">leaderboard</span>
+      <span class="clay-sidebar__label">Team Performance</span>
+    </a>
+    <a href="{% url 'reports:index' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'reports' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">summarize</span>
+      <span class="clay-sidebar__label">Reports</span>
+    </a>
+    <a href="{% url 'dashboard:settings' %}" class="clay-sidebar__link">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="clay-sidebar__label">Settings</span>
+    </a>
+  {% elif user.role == 'telecaller' %}
+    <div class="clay-sidebar__section">My Work</div>
+    <a href="{% url 'telecalling:my_leads' %}" class="clay-sidebar__link {% if request.resolver_match.url_name == 'my_leads' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">list_alt</span>
+      <span class="clay-sidebar__label">My Assigned Leads</span>
+    </a>
+    <a href="{% url 'telecalling:workspace' %}" class="clay-sidebar__link {% if request.resolver_match.url_name == 'workspace' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">call</span>
+      <span class="clay-sidebar__label">Calling Workspace</span>
+    </a>
+    <a href="{% url 'followups:list' %}" class="clay-sidebar__link {% if request.resolver_match.app_name == 'followups' %}is-active{% endif %}">
+      <span class="material-symbols-outlined">event_repeat</span>
+      <span class="clay-sidebar__label">Follow-ups</span>
+    </a>
+    <a href="{% url 'telecalling:history' %}" class="clay-sidebar__link">
+      <span class="material-symbols-outlined">history</span>
+      <span class="clay-sidebar__label">Call History</span>
+    </a>
+    <a href="{% url 'telecalling:interested' %}" class="clay-sidebar__link">
+      <span class="material-symbols-outlined">favorite</span>
+      <span class="clay-sidebar__label">Interested Students</span>
+    </a>
+    <a href="{% url 'dashboard:my_performance' %}" class="clay-sidebar__link">
+      <span class="material-symbols-outlined">insights</span>
+      <span class="clay-sidebar__label">My Performance</span>
+    </a>
+  {% endif %}
+
+  <div class="clay-sidebar__section">Account</div>
+  <a href="{% url 'accounts:profile' %}" class="clay-sidebar__link">
+    <span class="material-symbols-outlined">person</span>
+    <span class="clay-sidebar__label">My Profile</span>
+  </a>
+  <a href="{% url 'accounts:logout' %}" class="clay-sidebar__link">
+    <span class="material-symbols-outlined">logout</span>
+    <span class="clay-sidebar__label">Logout</span>
+  </a>
+</aside>

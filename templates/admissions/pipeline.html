@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Admission Pipeline{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-2">Admission Pipeline</h1>
+<p class="tw-text-sm tw-mb-5" style="color:var(--clay-text-muted);">
+  {% if can_move %}Drag a card to move a student between stages.{% else %}You have view-only access to this pipeline.{% endif %}
+</p>
+
+{% include "admissions/_kanban_board.html" %}
+
+<script>
+  function clayHandleDrop(event, stage) {
+    event.preventDefault();
+    var leadId = event.dataTransfer.getData('text/plain');
+    if (!leadId) return;
+    fetch("/admissions/pipeline/move/" + leadId + "/", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: "stage=" + encodeURIComponent(stage)
+    })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        document.getElementById('kanbanBoard').outerHTML = html.trim();
+      })
+      .catch(function () { clayToast('Could not move lead. Please retry.', 'danger'); });
+  }
+</script>
+{% endblock %}

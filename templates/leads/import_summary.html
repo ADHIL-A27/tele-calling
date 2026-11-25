@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Import Summary{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-2">Step 3 of 4 — Import Summary</h1>
+<p class="tw-text-sm tw-mb-5" style="color:var(--clay-text-muted);">{{ batch.original_filename }}</p>
+
+<div class="clay-kpi-grid tw-grid tw-grid-cols-2 md:tw-grid-cols-5 tw-gap-4 tw-mb-6">
+  {% include "components/clay_card.html" with icon="table_rows" label="Total Rows" value=summary.total_rows color="blue" %}
+  {% include "components/clay_card.html" with icon="check_circle" label="Valid Rows" value=summary.valid_rows color="success" %}
+  {% include "components/clay_card.html" with icon="error" label="Invalid Rows" value=summary.invalid_rows color="danger" %}
+  {% include "components/clay_card.html" with icon="content_copy" label="Duplicates" value=summary.duplicate_rows color="warning" %}
+  {% include "components/clay_card.html" with icon="person_add" label="New Leads" value=summary.new_leads_count color="purple" %}
+</div>
+
+{% if batch.error_report %}
+<div class="clay-card tw-mb-6">
+  <h2 class="tw-font-bold tw-mb-3">Row Errors (first {{ batch.error_report|length }})</h2>
+  <div style="max-height:260px;overflow-y:auto;">
+    {% for item in batch.error_report %}
+      <p class="tw-text-sm"><strong>Row {{ item.row }}:</strong> {{ item.errors|join:", " }}</p>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="clay-button clay-button--primary">
+    <span class="material-symbols-outlined">cloud_upload</span> Confirm &amp; Import {{ summary.new_leads_count }} Leads
+  </button>
+  <a href="{% url 'leads:import_start' %}" class="clay-button clay-button--ghost tw-ml-2">Cancel</a>
+</form>
+{% endblock %}

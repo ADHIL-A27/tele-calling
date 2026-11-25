@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Telecaller Management{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5">
+  <h1 class="tw-text-xl tw-font-bold">Telecaller Management</h1>
+  <a href="{% url 'accounts:team_create' %}" class="clay-button clay-button--primary">
+    <span class="material-symbols-outlined">person_add</span> Add Employee
+  </a>
+</div>
+
+<form method="get" class="tw-flex tw-gap-3 tw-mb-4 tw-max-w-md">
+  <select name="role" class="clay-input" onchange="this.form.submit()">
+    <option value="">All roles</option>
+    {% for value, label in roles %}
+      <option value="{{ value }}" {% if request.GET.role == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Phone</th>
+        <th>Active Leads</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.get_full_name|default:u.username }}</td>
+        <td><span class="clay-badge clay-badge--info">{{ u.get_role_display }}</span></td>
+        <td>{{ u.phone_number|default:"—" }}</td>
+        <td>{{ u.telecaller_profile.active_lead_count|default:"—" }}</td>
+        <td>
+          {% if u.is_active_employee %}
+            <span class="clay-badge clay-badge--success">Active</span>
+          {% else %}
+            <span class="clay-badge clay-badge--danger">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          <form method="post" action="{% url 'accounts:team_toggle_active' u.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="clay-button clay-button--sm clay-button--ghost">
+              {% if u.is_active_employee %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="clay-empty-state">No team members yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

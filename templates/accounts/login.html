@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block auth_content %}
+<div class="tw-min-h-screen tw-flex tw-items-center tw-justify-center tw-p-4">
+  <div class="clay-card" style="max-width:420px; width:100%;">
+    <div class="tw-flex tw-flex-col tw-items-center tw-mb-6">
+      <span class="material-symbols-outlined" style="font-size:42px;color:#5a74d6;">school</span>
+      <h1 class="tw-text-xl tw-font-bold tw-mt-2">Admission Telecalling CRM</h1>
+      <p class="tw-text-sm" style="color:var(--clay-text-muted);">Sign in to continue</p>
+    </div>
+
+    {% if form.non_field_errors %}
+      <div class="clay-badge clay-badge--danger tw-w-full tw-justify-center tw-mb-4 tw-normal-case">
+        {{ form.non_field_errors.0 }}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="clay-field">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="clay-field">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+      </div>
+      <button type="submit" class="clay-button clay-button--primary tw-w-full tw-mt-2">Login</button>
+    </form>
+
+    <div class="tw-text-center tw-mt-5">
+      <a href="{% url 'accounts:password_reset' %}" class="tw-text-sm tw-font-semibold" style="color:#5a74d6;">
+        Forgot password?
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

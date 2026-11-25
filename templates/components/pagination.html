@@ -1,0 +1,17 @@
+{% comment %}
+Usage: {% include "components/pagination.html" with page_obj=page_obj %}
+Requires the view's query string to be preserved via request.GET.
+{% endcomment %}
+{% if page_obj.has_other_pages %}
+<nav class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-mt-5" aria-label="Pagination">
+  {% if page_obj.has_previous %}
+    <a class="clay-button clay-button--sm clay-button--ghost" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif %}
+  <span class="tw-text-sm tw-font-semibold" style="color:var(--clay-text-muted)">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </span>
+  {% if page_obj.has_next %}
+    <a class="clay-button clay-button--sm clay-button--ghost" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+</nav>
+{% endif %}

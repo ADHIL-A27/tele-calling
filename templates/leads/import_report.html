@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Import Report{% endblock %}
+{% block content %}
+<div class="clay-card tw-max-w-xl">
+  <span class="material-symbols-outlined" style="font-size:42px;color:#7fd1ae;">check_circle</span>
+  <h1 class="tw-text-xl tw-font-bold tw-mt-3 tw-mb-4">Import Completed</h1>
+  <p><strong>File:</strong> {{ batch.original_filename }}</p>
+  <p><strong>Total rows:</strong> {{ batch.total_rows }}</p>
+  <p><strong>New leads added:</strong> {{ batch.new_leads_count }}</p>
+  <p><strong>Duplicates skipped:</strong> {{ batch.duplicate_rows }}</p>
+  <p><strong>Invalid rows skipped:</strong> {{ batch.invalid_rows }}</p>
+  <p><strong>Completed at:</strong> {{ batch.completed_at|date:"d M Y, H:i" }}</p>
+
+  <div class="tw-flex tw-gap-2 tw-mt-5">
+    <a href="{% url 'assignments:workspace' %}?batch={{ batch.pk }}" class="clay-button clay-button--primary">
+      <span class="material-symbols-outlined">assignment_ind</span> Assign These Leads
+    </a>
+    <a href="{% url 'leads:list' %}" class="clay-button clay-button--ghost">View Leads</a>
+  </div>
+</div>
+{% endblock %}

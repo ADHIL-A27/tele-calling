@@ -1,0 +1,21 @@
+/* Thin compatibility layer so Bootstrap 5 utility/grid classes coexist with
+   our claymorphism components and Tailwind's prefixed utilities without
+   visual clashes. Bootstrap component CSS (buttons, cards, forms) is
+   intentionally not overridden here -- we don't use Bootstrap components,
+   only its grid + a few utilities, and our clay-* classes always win via
+   source order (loaded after Bootstrap). */
+
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Prevent Bootstrap's default focus ring from fighting clay-input's own */
+.form-control:focus {
+  box-shadow: none;
+}
+
+/* Bootstrap icons sizing helper */
+.bi {
+  vertical-align: -0.125em;
+}

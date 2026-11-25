@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Follow-ups{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-5">Follow-up Management</h1>
+
+<div class="tw-flex tw-gap-2 tw-mb-5 tw-flex-wrap">
+  <a href="?category=today" class="clay-button clay-button--sm {% if category == 'today' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Today ({{ counts.today }})</a>
+  <a href="?category=tomorrow" class="clay-button clay-button--sm {% if category == 'tomorrow' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Tomorrow ({{ counts.tomorrow }})</a>
+  <a href="?category=upcoming" class="clay-button clay-button--sm {% if category == 'upcoming' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Upcoming ({{ counts.upcoming }})</a>
+  <a href="?category=overdue" class="clay-button clay-button--sm {% if category == 'overdue' %}clay-button--primary{% else %}clay-button--ghost{% endif %}" style="{% if counts.overdue %}border-color:var(--clay-danger);{% endif %}">Overdue ({{ counts.overdue }})</a>
+  <a href="?category=completed" class="clay-button clay-button--sm {% if category == 'completed' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Completed ({{ counts.completed }})</a>
+</div>
+
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead><tr><th>Student</th><th>Scheduled</th><th>Reason</th><th>Priority</th>{% if user.role in management_roles %}<th>Assigned To</th>{% endif %}<th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for f in items %}
+      <tr>
+        <td><a href="{% url 'leads:detail' f.lead.pk %}" class="tw-font-semibold">{{ f.lead.student_name }}</a></td>
+        <td>{{ f.scheduled_at|date:"d M Y, H:i" }}</td>
+        <td>{{ f.reason|default:"—" }}</td>
+        <td>{% include "components/status_badge.html" with label=f.get_priority_display variant=f.priority %}</td>
+        {% if user.role in management_roles %}<td>{{ f.assigned_to.get_full_name|default:f.assigned_to.username }}</td>{% endif %}
+        <td>
+          <span class="clay-badge clay-badge--{% if f.status == 'completed' %}success{% elif f.is_overdue %}danger{% else %}warning{% endif %}">
+            {{ f.get_status_display }}
+          </span>
+        </td>
+        <td class="tw-flex tw-gap-2">
+          {% if f.status == 'pending' %}
+          <form method="post" action="{% url 'followups:complete' f.pk %}">{% csrf_token %}<button class="clay-button clay-button--sm clay-button--success">Done</button></form>
+          <a href="tel:{{ f.lead.student_phone }}" class="clay-button clay-button--sm clay-button--ghost">Call</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="clay-empty-state">Nothing here.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

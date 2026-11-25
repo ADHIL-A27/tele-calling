@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Calling Activity{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-5">Calling Activity</h1>
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead><tr><th>Date</th><th>Telecaller</th><th>Student</th><th>Outcome</th><th>Remarks</th></tr></thead>
+    <tbody>
+      {% for call in page_obj %}
+      <tr>
+        <td>{{ call.call_date }} {{ call.call_time }}</td>
+        <td>{{ call.telecaller.get_full_name|default:call.telecaller.username }}</td>
+        <td>{{ call.lead.student_name }}</td>
+        <td><span class="clay-badge clay-badge--neutral">{{ call.outcome }}</span></td>
+        <td>{{ call.remarks|default:"—"|truncatechars:50 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="clay-empty-state">No calling activity yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" with page_obj=page_obj %}
+{% endblock %}

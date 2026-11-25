@@ -1,0 +1,7 @@
+{% comment %}
+Usage: {% include "components/status_badge.html" with label=lead.get_priority_display variant="hot" %}
+variant maps to clay-priority-* or clay-badge--* classes.
+{% endcomment %}
+<span class="clay-badge {% if variant == 'hot' %}clay-priority-hot{% elif variant == 'warm' %}clay-priority-warm{% elif variant == 'cold' %}clay-priority-cold{% else %}clay-badge--{{ variant|default:'neutral' }}{% endif %}">
+  {{ label }}
+</span>

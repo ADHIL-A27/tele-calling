@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="tw-max-w-2xl">
+  <h1 class="tw-text-xl tw-font-bold tw-mb-4">My Profile</h1>
+  <div class="clay-card">
+    <div class="tw-flex tw-items-center tw-gap-4 tw-mb-6">
+      <span class="material-symbols-outlined" style="font-size:52px;color:#5a74d6;">account_circle</span>
+      <div>
+        <div class="tw-font-bold tw-text-lg">{{ profile_user.get_full_name|default:profile_user.username }}</div>
+        <span class="clay-badge clay-badge--info">{{ profile_user.get_role_display }}</span>
+      </div>
+    </div>
+
+    {% if profile_user == user %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="clay-field">
+        <label for="{{ form.first_name.id_for_label }}">First name</label>
+        {{ form.first_name }}
+      </div>
+      <div class="clay-field">
+        <label for="{{ form.last_name.id_for_label }}">Last name</label>
+        {{ form.last_name }}
+      </div>
+      <div class="clay-field">
+        <label for="{{ form.email.id_for_label }}">Email</label>
+        {{ form.email }}
+      </div>
+      <div class="clay-field">
+        <label for="{{ form.phone_number.id_for_label }}">Phone number</label>
+        {{ form.phone_number }}
+      </div>
+      <button type="submit" class="clay-button clay-button--primary">Save changes</button>
+    </form>
+    {% else %}
+      <p><strong>Email:</strong> {{ profile_user.email }}</p>
+      <p><strong>Phone:</strong> {{ profile_user.phone_number }}</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}My Assigned Leads{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-5">My Assigned Leads</h1>
+
+<form method="get" class="tw-flex tw-gap-3 tw-mb-4 tw-flex-wrap">
+  <input type="text" name="q" value="{{ request.GET.q }}" class="clay-input" style="max-width:260px;" placeholder="Search name / phone">
+  <select name="stage" class="clay-input" style="max-width:220px;" onchange="this.form.submit()">
+    <option value="">All stages</option>
+    {% for value, label in stages %}<option value="{{ value }}" {% if request.GET.stage == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="clay-button clay-button--sm">Filter</button>
+</form>
+
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead><tr><th>Student</th><th>Mobile</th><th>Course</th><th>Stage</th><th>Last Call</th><th>Follow-up</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for lead in page_obj %}
+      <tr>
+        <td><a href="{% url 'leads:detail' lead.pk %}" class="tw-font-semibold">{{ lead.student_name }}</a></td>
+        <td>{{ lead.student_phone }}</td>
+        <td>{{ lead.interested_course|default:"—" }}</td>
+        <td><span class="clay-badge clay-badge--info">{{ lead.get_stage_display }}</span></td>
+        <td>{{ lead.last_call_at|date:"d M, H:i"|default:"Never" }}</td>
+        <td>{{ lead.next_follow_up_at|date:"d M, H:i"|default:"—" }}</td>
+        <td><a href="{% url 'telecalling:workspace' %}?lead={{ lead.pk }}" class="clay-button clay-button--sm clay-button--success">Call</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="clay-empty-state">No leads assigned to you yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" with page_obj=page_obj %}
+{% endblock %}

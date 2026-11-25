@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Student Leads{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5 tw-flex-wrap tw-gap-3">
+  <h1 class="tw-text-xl tw-font-bold">Student Leads <span class="tw-text-sm tw-font-normal" style="color:var(--clay-text-muted);">({{ total_count }})</span></h1>
+  {% if user.role in management_roles %}
+  <div class="tw-flex tw-gap-2">
+    <a href="{% url 'leads:import_start' %}" class="clay-button clay-button--primary">
+      <span class="material-symbols-outlined">upload_file</span> Import Students
+    </a>
+    <a href="{% url 'assignments:workspace' %}" class="clay-button clay-button--ghost">
+      <span class="material-symbols-outlined">assignment_ind</span> Assign Leads
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<form method="get" class="clay-card clay-card--compact tw-grid tw-grid-cols-2 md:tw-grid-cols-5 tw-gap-3 tw-mb-5">
+  <input type="text" name="q" value="{{ request.GET.q }}" class="clay-input tw-col-span-2" placeholder="Search name / phone / email">
+  <select name="stage" class="clay-input" onchange="this.form.submit()">
+    <option value="">All stages</option>
+    {% for value, label in stages %}
+      <option value="{{ value }}" {% if request.GET.stage == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="priority" class="clay-input" onchange="this.form.submit()">
+    <option value="">All priority</option>
+    {% for value, label in priorities %}
+      <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="course" class="clay-input" onchange="this.form.submit()">
+    <option value="">All courses</option>
+    {% for c in courses %}
+      <option value="{{ c.pk }}" {% if request.GET.course == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="clay-button clay-button--sm">Filter</button>
+</form>
+
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Mobile</th>
+        <th>Course</th>
+        <th>Stage</th>
+        <th>Priority</th>
+        <th>Owner</th>
+        <th>Next Follow-up</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lead in page_obj %}
+      <tr>
+        <td><a href="{% url 'leads:detail' lead.pk %}" class="tw-font-semibold">{{ lead.student_name }}</a></td>
+        <td>{{ lead.student_phone }}</td>
+        <td>{{ lead.interested_course|default:"—" }}</td>
+        <td><span class="clay-badge clay-badge--info">{{ lead.get_stage_display }}</span></td>
+        <td>{% include "components/status_badge.html" with label=lead.get_priority_display variant=lead.priority %}</td>
+        <td>{% if lead.current_owner %}{{ lead.current_owner.get_full_name|default:lead.current_owner.username }}{% else %}Unassigned{% endif %}</td>
+        <td>{{ lead.next_follow_up_at|date:"d M, H:i"|default:"—" }}</td>
+        <td>
+          <a href="tel:{{ lead.student_phone }}" class="clay-button clay-button--sm clay-button--success">
+            <span class="material-symbols-outlined" style="font-size:16px;">call</span> Call
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="clay-empty-state">
+        <span class="material-symbols-outlined">person_search</span><br>No leads found.
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" with page_obj=page_obj %}
+{% endblock %}

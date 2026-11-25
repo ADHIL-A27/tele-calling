@@ -1,0 +1,20 @@
+<div class="tw-flex tw-gap-4 tw-overflow-x-auto tw-pb-4" id="kanbanBoard" style="scroll-snap-type:x proximate;">
+  {% for col in columns %}
+  <div class="clay-card clay-card--compact" style="min-width:260px; flex-shrink:0; scroll-snap-align:start;"
+       data-stage="{{ col.stage }}" ondragover="event.preventDefault()" ondrop="clayHandleDrop(event, '{{ col.stage }}')">
+    <div class="tw-flex tw-items-center tw-justify-between tw-mb-3">
+      <h3 class="tw-font-bold tw-text-sm">{{ col.label }}</h3>
+      <span class="clay-badge clay-badge--neutral">{{ col.leads.count }}</span>
+    </div>
+    <div class="tw-flex tw-flex-col tw-gap-2" style="min-height:60px;">
+      {% for lead in col.leads %}
+      <div class="clay-card clay-card--flat clay-card--compact" {% if can_move %}draggable="true" ondragstart="event.dataTransfer.setData('text/plain','{{ lead.pk }}')"{% endif %} style="cursor:{% if can_move %}grab{% else %}default{% endif %};">
+        <a href="{% url 'leads:detail' lead.pk %}" class="tw-font-semibold tw-text-sm tw-block tw-mb-1">{{ lead.student_name }}</a>
+        <div class="tw-text-xs" style="color:var(--clay-text-soft);">{{ lead.interested_course|default:"—" }}</div>
+        <div class="tw-text-xs" style="color:var(--clay-text-soft);">{{ lead.current_owner|default:"Unassigned" }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>

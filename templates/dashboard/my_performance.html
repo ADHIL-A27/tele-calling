@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}My Performance{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-5">My Performance</h1>
+
+<div class="tw-grid tw-grid-cols-2 md:tw-grid-cols-4 tw-gap-4 tw-mb-6">
+  {% include "components/clay_card.html" with icon="call" label="Total Attempts" value=total_attempts color="blue" %}
+  {% include "components/clay_card.html" with icon="group" label="Unique Leads" value=unique_leads color="purple" %}
+  {% include "components/clay_card.html" with icon="favorite" label="Interested" value=interested color="success" %}
+  {% include "components/clay_card.html" with icon="verified" label="Admissions" value=admissions_confirmed color="success" %}
+</div>
+
+<div class="clay-card">
+  <h3 class="tw-font-bold tw-mb-3">My Weekly Calls</h3>
+  <canvas id="chartMyWeekly" height="160"></canvas>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const weekly = {{ weekly_json|safe }};
+  new Chart(document.getElementById('chartMyWeekly'), {
+    type: 'bar',
+    data: { labels: weekly.labels, datasets: [{ label: 'Calls', data: weekly.values, backgroundColor: '#8fa6f3', borderRadius: 8 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+</script>
+{% endblock %}

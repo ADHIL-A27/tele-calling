@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Map Columns · Import{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-2">Step 2 of 4 — Map Columns</h1>
+<p class="tw-text-sm tw-mb-5" style="color:var(--clay-text-muted);">
+  {{ batch.original_filename }} · {{ total_rows }} rows detected. We've auto-mapped columns where possible — review and adjust below.
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="clay-table-wrap tw-mb-5">
+    <table class="clay-table">
+      <thead>
+        <tr>
+          {% for col in columns %}
+            <th>{{ col.header }}</th>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for col in columns %}
+          <th>
+            <select name="map_{{ col.index }}" class="clay-input">
+              <option value="">-- Ignore --</option>
+              {% for key, label in target_fields.items %}
+                <option value="{{ key }}" {% if col.guess == key %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in preview_rows %}
+        <tr>
+          {% for value in row %}
+            <td>{{ value }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <button type="submit" class="clay-button clay-button--primary">
+    Continue to Validation <span class="material-symbols-outlined">arrow_forward</span>
+  </button>
+</form>
+{% endblock %}

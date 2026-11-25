@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5">
+  <h1 class="tw-text-xl tw-font-bold">Notifications</h1>
+  <a href="{% url 'notifications:mark_all_read' %}" class="clay-button clay-button--ghost clay-button--sm">Mark all as read</a>
+</div>
+
+{% for n in notifications %}
+<a href="{% url 'notifications:mark_read' n.pk %}" class="clay-card clay-card--compact tw-block tw-mb-3" style="{% if not n.is_read %}border-left:4px solid var(--clay-blue);{% endif %}">
+  <div class="tw-flex tw-items-center tw-justify-between">
+    <div class="tw-font-semibold tw-text-sm">{{ n.title }}</div>
+    <div class="tw-text-xs" style="color:var(--clay-text-soft);">{{ n.created_at|timesince }} ago</div>
+  </div>
+  <div class="tw-text-sm" style="color:var(--clay-text-muted);">{{ n.message }}</div>
+</a>
+{% empty %}
+<div class="clay-card clay-empty-state">
+  <span class="material-symbols-outlined">notifications_off</span>
+  <p>No notifications yet.</p>
+</div>
+{% endfor %}
+{% endblock %}

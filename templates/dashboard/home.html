@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5 tw-flex-wrap tw-gap-3">
+  <h1 class="tw-text-xl tw-font-bold">College Admission Dashboard</h1>
+  <form method="get" class="tw-flex tw-gap-2 tw-flex-wrap">
+    <select name="range" class="clay-input" style="max-width:160px;" onchange="this.form.submit()">
+      <option value="today" {% if request.GET.range == 'today' or not request.GET.range %}selected{% endif %}>Today</option>
+      <option value="yesterday" {% if request.GET.range == 'yesterday' %}selected{% endif %}>Yesterday</option>
+      <option value="this_week" {% if request.GET.range == 'this_week' %}selected{% endif %}>This Week</option>
+      <option value="this_month" {% if request.GET.range == 'this_month' %}selected{% endif %}>This Month</option>
+    </select>
+    <select name="telecaller" class="clay-input" style="max-width:180px;" onchange="this.form.submit()">
+      <option value="">All Telecallers</option>
+      {% for t in telecallers %}<option value="{{ t.pk }}" {% if request.GET.telecaller == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.get_full_name|default:t.username }}</option>{% endfor %}
+    </select>
+    <select name="course" class="clay-input" style="max-width:180px;" onchange="this.form.submit()">
+      <option value="">All Courses</option>
+      {% for c in courses %}<option value="{{ c.pk }}" {% if request.GET.course == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+  </form>
+</div>
+
+<div class="clay-kpi-grid tw-grid tw-grid-cols-2 md:tw-grid-cols-4 tw-gap-4 tw-mb-6">
+  {% include "components/clay_card.html" with icon="groups" label="Total Students" value=kpis.total_students color="blue" %}
+  {% include "components/clay_card.html" with icon="dialpad" label="Uploaded Numbers" value=kpis.total_uploaded_numbers color="blue" %}
+  {% include "components/clay_card.html" with icon="assignment_turned_in" label="Assigned Leads" value=kpis.assigned_leads color="purple" %}
+  {% include "components/clay_card.html" with icon="person_off" label="Unassigned Leads" value=kpis.unassigned_leads color="warning" %}
+  {% include "components/clay_card.html" with icon="call" label="Total Call Attempts" value=kpis.total_call_attempts color="info" %}
+  {% include "components/clay_card.html" with icon="today" label="Calls Completed Today" value=kpis.calls_completed_today color="success" %}
+  {% include "components/clay_card.html" with icon="hourglass_top" label="Pending Calls" value=kpis.pending_calls color="warning" %}
+  {% include "components/clay_card.html" with icon="favorite" label="Interested Students" value=kpis.interested_students color="success" %}
+  {% include "components/clay_card.html" with icon="thumb_down" label="Not Interested" value=kpis.not_interested color="danger" %}
+  {% include "components/clay_card.html" with icon="phone_missed" label="No Answer" value=kpis.no_answer color="peach" %}
+  {% include "components/clay_card.html" with icon="event_repeat" label="Callback Requests" value=kpis.callback_requests color="purple" %}
+  {% include "components/clay_card.html" with icon="warning" label="Overdue Follow-ups" value=kpis.overdue_follow_ups color="danger" %}
+  {% include "components/clay_card.html" with icon="contact_mail" label="Admission Enquiries" value=kpis.admission_enquiries color="blue" %}
+  {% include "components/clay_card.html" with icon="event" label="Counseling Scheduled" value=kpis.counseling_scheduled color="info" %}
+  {% include "components/clay_card.html" with icon="description" label="Applications Submitted" value=kpis.applications_submitted color="purple" %}
+  {% include "components/clay_card.html" with icon="verified" label="Confirmed Admissions" value=kpis.confirmed_admissions color="success" %}
+</div>
+
+<div class="tw-grid lg:tw-grid-cols-2 tw-gap-5 tw-mb-5">
+  <div class="clay-card">
+    <h3 class="tw-font-bold tw-mb-3">Daily Calling Activity</h3>
+    <canvas id="chartDaily" height="180"></canvas>
+  </div>
+  <div class="clay-card">
+    <h3 class="tw-font-bold tw-mb-3">Weekly Performance</h3>
+    <canvas id="chartWeekly" height="180"></canvas>
+  </div>
+  <div class="clay-card">
+    <h3 class="tw-font-bold tw-mb-3">Monthly Lead Conversion (Enrolled)</h3>
+    <canvas id="chartMonthly" height="180"></canvas>
+  </div>
+  <div class="clay-card">
+    <h3 class="tw-font-bold tw-mb-3">Telecaller Comparison</h3>
+    <canvas id="chartTelecaller" height="180"></canvas>
+  </div>
+  <div class="clay-card">
+    <h3 class="tw-font-bold tw-mb-3">Interested vs Not Interested</h3>
+    <canvas id="chartInterested" height="180"></canvas>
+  </div>
+  <div class="clay-card">
+    <h3 class="tw-font-bold tw-mb-3">Course-wise Enquiries</h3>
+    <canvas id="chartCourse" height="180"></canvas>
+  </div>
+  <div class="clay-card lg:tw-col-span-2">
+    <h3 class="tw-font-bold tw-mb-3">Admission Funnel</h3>
+    <canvas id="chartFunnel" height="140"></canvas>
+  </div>
+</div>
+
+<div class="clay-card">
+  <h3 class="tw-font-bold tw-mb-2">Follow-up Completion Rate</h3>
+  <p class="tw-text-sm" style="color:var(--clay-text-muted);">{{ follow_up_rate.completed }} of {{ follow_up_rate.total }} follow-ups completed</p>
+  <div style="background:var(--clay-bg-alt);border-radius:999px;height:14px;overflow:hidden;margin-top:8px;">
+    <div style="background:linear-gradient(90deg,#92dcb9,#7fd1ae);height:100%;width:{{ follow_up_rate.rate }}%;"></div>
+  </div>
+  <p class="tw-text-sm tw-mt-2 tw-font-semibold">{{ follow_up_rate.rate }}%</p>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const chartData = {{ charts_json|safe }};
+  const clayColors = ['#8fa6f3', '#b39ddb', '#f6c9a8', '#7fd1ae', '#f3c969', '#f09898', '#8fc6f3'];
+
+  new Chart(document.getElementById('chartDaily'), {
+    type: 'line',
+    data: { labels: chartData.daily_calling.labels, datasets: [{ label: 'Calls', data: chartData.daily_calling.values, borderColor: '#8fa6f3', backgroundColor: 'rgba(143,166,243,0.15)', fill: true, tension: 0.35 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('chartWeekly'), {
+    type: 'bar',
+    data: { labels: chartData.weekly_performance.labels, datasets: [{ label: 'Calls', data: chartData.weekly_performance.values, backgroundColor: '#b39ddb', borderRadius: 8 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('chartMonthly'), {
+    type: 'line',
+    data: { labels: chartData.monthly_conversion.labels, datasets: [{ label: 'Enrolled', data: chartData.monthly_conversion.values, borderColor: '#7fd1ae', backgroundColor: 'rgba(127,209,174,0.15)', fill: true, tension: 0.35 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('chartTelecaller'), {
+    type: 'bar',
+    data: {
+      labels: chartData.telecaller_comparison.labels,
+      datasets: [
+        { label: 'Calls', data: chartData.telecaller_comparison.calls, backgroundColor: '#8fa6f3', borderRadius: 8 },
+        { label: 'Conversions', data: chartData.telecaller_comparison.conversions, backgroundColor: '#7fd1ae', borderRadius: 8 }
+      ]
+    }
+  });
+
+  new Chart(document.getElementById('chartInterested'), {
+    type: 'doughnut',
+    data: { labels: chartData.interested_split.labels, datasets: [{ data: chartData.interested_split.values, backgroundColor: ['#7fd1ae', '#f09898'] }] }
+  });
+
+  new Chart(document.getElementById('chartCourse'), {
+    type: 'bar',
+    data: { labels: chartData.course_enquiries.labels, datasets: [{ label: 'Enquiries', data: chartData.course_enquiries.values, backgroundColor: clayColors, borderRadius: 8 }] },
+    options: { plugins: { legend: { display: false } }, indexAxis: 'y' }
+  });
+
+  new Chart(document.getElementById('chartFunnel'), {
+    type: 'bar',
+    data: { labels: chartData.admission_funnel.labels, datasets: [{ label: 'Students', data: chartData.admission_funnel.values, backgroundColor: '#8fc6f3', borderRadius: 8 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+</script>
+{% endblock %}

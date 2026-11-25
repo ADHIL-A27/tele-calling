@@ -1,0 +1,12 @@
+{% comment %}
+Usage: {% include "components/clay_card.html" with icon="person" label="Total Students" value=42 color="blue" %}
+{% endcomment %}
+<div class="clay-kpi clay-kpi--{{ color|default:'blue' }}">
+  <div class="clay-kpi__icon">
+    <span class="material-symbols-outlined">{{ icon|default:"insights" }}</span>
+  </div>
+  <div>
+    <div class="clay-kpi__value">{{ value }}</div>
+    <div class="clay-kpi__label">{{ label }}</div>
+  </div>
+</div>

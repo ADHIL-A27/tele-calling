@@ -1,0 +1,47 @@
+<header class="clay-navbar">
+  <button class="clay-navbar__icon-btn tw-flex lg:tw-hidden" id="sidebarToggle" aria-label="Toggle menu">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+
+  <div class="clay-navbar__search tw-hidden md:tw-block">
+    <form method="get" action="{% url 'leads:list' %}">
+      <input type="search" name="q" class="clay-input" placeholder="Search students, phone numbers...">
+    </form>
+  </div>
+
+  <div class="tw-flex tw-items-center tw-gap-3 tw-ml-auto">
+    <div class="clay-dropdown">
+      <button class="clay-navbar__icon-btn" id="notifBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="material-symbols-outlined">notifications</span>
+        {% if unread_notification_count %}<span class="clay-dot"></span>{% endif %}
+      </button>
+      <div class="clay-dropdown__menu" id="notifMenu" role="menu">
+        <div class="tw-px-3 tw-py-2 tw-font-semibold tw-text-sm">Notifications</div>
+        {% for n in unread_notifications %}
+          <a href="{{ n.link|default:'#' }}" class="clay-dropdown__item">
+            <div class="tw-font-semibold tw-text-sm">{{ n.title }}</div>
+            <div class="tw-text-xs" style="color:var(--clay-text-soft)">{{ n.message }}</div>
+          </a>
+        {% empty %}
+          <div class="clay-dropdown__item">No new notifications</div>
+        {% endfor %}
+        <a href="{% url 'notifications:list' %}" class="clay-dropdown__item tw-text-center tw-font-semibold">View all</a>
+      </div>
+    </div>
+
+    <div class="clay-dropdown">
+      <button class="clay-navbar__icon-btn" id="userBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="material-symbols-outlined">account_circle</span>
+      </button>
+      <div class="clay-dropdown__menu" id="userMenu" role="menu">
+        <div class="tw-px-3 tw-py-2">
+          <div class="tw-font-semibold tw-text-sm">{{ user.get_full_name|default:user.username }}</div>
+          <div class="tw-text-xs" style="color:var(--clay-text-soft)">{{ user.get_role_display }}</div>
+        </div>
+        <hr class="clay-divider" style="margin:6px 0;">
+        <a href="{% url 'accounts:profile' %}" class="clay-dropdown__item">My Profile</a>
+        <a href="{% url 'accounts:logout' %}" class="clay-dropdown__item">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>

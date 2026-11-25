@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.student_name }}{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5 tw-flex-wrap tw-gap-3">
+  <div>
+    <h1 class="tw-text-xl tw-font-bold">{{ lead.student_name }}</h1>
+    <p class="tw-text-sm" style="color:var(--clay-text-muted);">{{ lead.student_phone }} · {{ lead.get_stage_display }}</p>
+  </div>
+  <a href="tel:{{ lead.student_phone }}" class="clay-button clay-button--success">
+    <span class="material-symbols-outlined">call</span> Call Now
+  </a>
+</div>
+
+<div class="tw-flex tw-gap-2 tw-mb-5 tw-flex-wrap">
+  <a href="?tab=overview" class="clay-button clay-button--sm {% if tab == 'overview' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Overview</a>
+  <a href="?tab=calls" class="clay-button clay-button--sm {% if tab == 'calls' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Call History</a>
+  <a href="?tab=followups" class="clay-button clay-button--sm {% if tab == 'followups' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Follow-ups</a>
+  <a href="?tab=admissions" class="clay-button clay-button--sm {% if tab == 'admissions' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Admissions</a>
+  <a href="?tab=activity" class="clay-button clay-button--sm {% if tab == 'activity' %}clay-button--primary{% else %}clay-button--ghost{% endif %}">Activity Timeline</a>
+</div>
+
+{% if tab == 'overview' %}
+<div class="tw-grid md:tw-grid-cols-2 tw-gap-5">
+  <div class="clay-card">
+    <h2 class="tw-font-bold tw-mb-3">Student Information</h2>
+    <p><strong>Name:</strong> {{ lead.student_name }}</p>
+    <p><strong>Phone:</strong> {{ lead.student_phone }}</p>
+    <p><strong>Email:</strong> {{ lead.email|default:"—" }}</p>
+    <p><strong>Parent:</strong> {{ lead.parent_name|default:"—" }} ({{ lead.parent_phone|default:"—" }})</p>
+    <p><strong>District / Location:</strong> {{ lead.district|default:"—" }} / {{ lead.location|default:"—" }}</p>
+    <p><strong>Qualification:</strong> {{ lead.qualification|default:"—" }}</p>
+    <p><strong>Previous School:</strong> {{ lead.previous_school|default:"—" }}</p>
+  </div>
+  <div class="clay-card">
+    <h2 class="tw-font-bold tw-mb-3">Lead Status</h2>
+    <p><strong>Interested Course:</strong> {{ lead.interested_course|default:"—" }}</p>
+    <p><strong>Stage:</strong> <span class="clay-badge clay-badge--info">{{ lead.get_stage_display }}</span></p>
+    <p><strong>Priority:</strong> {% include "components/status_badge.html" with label=lead.get_priority_display variant=lead.priority %}</p>
+    <p><strong>Assigned Caller:</strong> {% if lead.current_owner %}{{ lead.current_owner.get_full_name|default:lead.current_owner.username }}{% else %}Unassigned{% endif %}</p>
+    <p><strong>Source / Campaign:</strong> {{ lead.lead_source|default:"—" }} / {{ lead.campaign|default:"—" }}</p>
+    <p><strong>Remarks:</strong> {{ lead.remarks|default:"—" }}</p>
+  </div>
+</div>
+
+{% elif tab == 'calls' %}
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead><tr><th>Date</th><th>Telecaller</th><th>Outcome</th><th>Remarks</th></tr></thead>
+    <tbody>
+      {% for call in call_attempts %}
+      <tr>
+        <td>{{ call.call_date }} {{ call.call_time }}</td>
+        <td>{{ call.telecaller.get_full_name|default:call.telecaller.username }}</td>
+        <td><span class="clay-badge clay-badge--neutral">{{ call.outcome|default:"—" }}</span></td>
+        <td>{{ call.remarks|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="clay-empty-state">No calls logged yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif tab == 'followups' %}
+<div class="clay-table-wrap">
+  <table class="clay-table">
+    <thead><tr><th>Scheduled</th><th>Assigned to</th><th>Reason</th><th>Priority</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for f in follow_ups %}
+      <tr>
+        <td>{{ f.scheduled_at|date:"d M Y, H:i" }}</td>
+        <td>{{ f.assigned_to.get_full_name|default:f.assigned_to.username }}</td>
+        <td>{{ f.reason|default:"—" }}</td>
+        <td>{{ f.get_priority_display }}</td>
+        <td><span class="clay-badge clay-badge--{% if f.status == 'completed' %}success{% elif f.is_overdue %}danger{% else %}warning{% endif %}">{{ f.get_status_display }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="clay-empty-state">No follow-ups scheduled.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif tab == 'admissions' %}
+<div class="clay-card">
+  <p><strong>Interested Course:</strong> {{ lead.interested_course|default:"—" }}</p>
+  <p><strong>Pipeline Stage:</strong> <span class="clay-badge clay-badge--info">{{ lead.get_stage_display }}</span></p>
+  <p style="color:var(--clay-text-muted);" class="tw-mt-2">
+    Move this student through New → Contacted → Interested → Counseling → Application → Admission Confirmed → Enrolled from the
+    <a href="{% url 'admissions:pipeline' %}" style="color:#5a74d6;font-weight:600;">Admission Pipeline</a> board.
+  </p>
+</div>
+
+{% elif tab == 'activity' %}
+<div class="clay-card">
+  <h3 class="tw-font-bold tw-mb-3">Assignment History</h3>
+  {% for a in assignment_history %}
+    <p>{{ a.assigned_at|date:"d M Y, H:i" }} — assigned to {{ a.telecaller }} by {{ a.assigned_by|default:"system" }} ({{ a.get_method_display }}){% if not a.is_active %} — ended {{ a.unassigned_at|date:"d M Y" }}{% endif %}</p>
+  {% empty %}
+    <p style="color:var(--clay-text-muted);">No assignment history.</p>
+  {% endfor %}
+  <hr class="clay-divider">
+  <h3 class="tw-font-bold tw-mb-3">Stage Changes</h3>
+  {% for s in stage_history %}
+    <p>{{ s.changed_at|date:"d M Y, H:i" }} — {{ s.from_stage|default:"start" }} → {{ s.to_stage }} by {{ s.changed_by|default:"system" }}</p>
+  {% empty %}
+    <p style="color:var(--clay-text-muted);">No stage changes yet.</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

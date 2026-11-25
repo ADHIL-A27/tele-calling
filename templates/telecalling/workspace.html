@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Calling Workspace{% endblock %}
+{% block content %}
+<div class="tw-flex tw-items-center tw-justify-between tw-mb-5">
+  <h1 class="tw-text-xl tw-font-bold">Calling Workspace</h1>
+  <span class="clay-badge clay-badge--info">{{ pending_count }} pending</span>
+</div>
+
+{% if lead %}
+<div class="tw-grid lg:tw-grid-cols-3 tw-gap-5">
+  <div class="lg:tw-col-span-2 clay-card">
+    <div class="tw-flex tw-items-start tw-justify-between tw-mb-4">
+      <div>
+        <h2 class="tw-text-lg tw-font-bold">{{ lead.student_name }}</h2>
+        <p style="color:var(--clay-text-muted);">{{ lead.student_phone }}</p>
+      </div>
+      {% include "components/status_badge.html" with label=lead.get_priority_display variant=lead.priority %}
+    </div>
+
+    <div class="tw-grid tw-grid-cols-2 tw-gap-3 tw-mb-4 tw-text-sm">
+      <p><strong>Course:</strong> {{ lead.interested_course|default:"—" }}</p>
+      <p><strong>Stage:</strong> {{ lead.get_stage_display }}</p>
+      <p><strong>Parent:</strong> {{ lead.parent_name|default:"—" }} ({{ lead.parent_phone|default:"—" }})</p>
+      <p><strong>Location:</strong> {{ lead.location|default:"—" }}</p>
+    </div>
+
+    <div class="tw-flex tw-gap-2 tw-mb-5">
+      <a href="tel:{{ lead.student_phone }}" class="clay-button clay-button--success tw-flex-1">
+        <span class="material-symbols-outlined">call</span> Call Student
+      </a>
+      {% if lead.parent_phone %}
+      <a href="tel:{{ lead.parent_phone }}" class="clay-button clay-button--ghost tw-flex-1">
+        <span class="material-symbols-outlined">call</span> Call Parent
+      </a>
+      {% endif %}
+      <a href="{% url 'leads:detail' lead.pk %}" class="clay-button clay-button--ghost">
+        <span class="material-symbols-outlined">open_in_new</span>
+      </a>
+    </div>
+
+    <hr class="clay-divider">
+
+    <h3 class="tw-font-bold tw-mb-3">Record Call Outcome</h3>
+    <form method="post" action="{% url 'telecalling:log_call' lead.pk %}">
+      {% csrf_token %}
+      <div class="clay-field">
+        <label>Call Outcome</label>
+        {{ form.outcome }}
+      </div>
+      <div class="tw-grid md:tw-grid-cols-2 tw-gap-3">
+        <div class="clay-field">
+          <label>Call Duration (seconds)</label>
+          {{ form.duration_seconds }}
+        </div>
+        <div class="clay-field">
+          <label>Update Interested Course</label>
+          {{ form.update_course_interest }}
+        </div>
+      </div>
+      <div class="clay-field">
+        <label>Remarks</label>
+        {{ form.remarks }}
+      </div>
+      <div class="clay-field">
+        <label class="tw-flex tw-items-center tw-gap-2">
+          {{ form.schedule_follow_up }} Schedule a callback
+        </label>
+      </div>
+      <div class="tw-grid md:tw-grid-cols-2 tw-gap-3">
+        <div class="clay-field">
+          <label>Callback Date &amp; Time</label>
+          {{ form.follow_up_at }}
+        </div>
+        <div class="clay-field">
+          <label>Callback Reason</label>
+          {{ form.follow_up_reason }}
+        </div>
+      </div>
+      <button type="submit" class="clay-button clay-button--primary tw-w-full">
+        <span class="material-symbols-outlined">save</span> Save &amp; Load Next Lead
+      </button>
+    </form>
+  </div>
+
+  <div>
+    <div class="clay-card clay-card--compact">
+      <h3 class="tw-font-bold tw-mb-2">Quick Actions</h3>
+      <a href="{% url 'telecalling:workspace' %}" class="clay-button clay-button--ghost tw-w-full tw-mb-2">
+        <span class="material-symbols-outlined">skip_next</span> Next Lead
+      </a>
+      <a href="{% url 'telecalling:my_leads' %}" class="clay-button clay-button--ghost tw-w-full">
+        <span class="material-symbols-outlined">list_alt</span> My Lead List
+      </a>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="clay-card clay-empty-state">
+  <span class="material-symbols-outlined">task_alt</span>
+  <p>No pending leads right now. Great job!</p>
+</div>
+{% endif %}
+{% endblock %}

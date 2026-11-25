@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1 class="tw-text-xl tw-font-bold tw-mb-5">Reports &amp; Exports</h1>
+<div class="tw-grid md:tw-grid-cols-3 tw-gap-4">
+  {% for key, label in report_types %}
+  <div class="clay-card clay-card--compact">
+    <h3 class="tw-font-semibold tw-mb-3">{{ label }}</h3>
+    <div class="tw-flex tw-gap-2">
+      <a href="{% url 'reports:export' key %}?format=xlsx" class="clay-button clay-button--sm clay-button--primary">
+        <span class="material-symbols-outlined" style="font-size:16px;">download</span> Excel
+      </a>
+      <a href="{% url 'reports:export' key %}?format=csv" class="clay-button clay-button--sm clay-button--ghost">CSV</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
