@@ -54,7 +54,12 @@ def my_leads(request):
 def _next_lead_for(user, exclude_pk=None):
     base = StudentLead.objects.filter(current_owner=user, is_archived=False, do_not_call=False)
     if exclude_pk:
-        base = base.exclude(pk=exclude_pk)
+        # Explicit "Next Lead" navigation must advance through the full queue.
+        # Re-running the priority selector after merely excluding one record can
+        # bounce between the same two high-priority leads indefinitely.
+        remaining = base.exclude(pk=exclude_pk)
+        next_in_sequence = remaining.filter(pk__gt=exclude_pk).order_by("pk").first()
+        return next_in_sequence or remaining.order_by("pk").first()
 
     overdue = base.filter(next_follow_up_at__lte=timezone.now(), next_follow_up_at__isnull=False).order_by(
         "next_follow_up_at"

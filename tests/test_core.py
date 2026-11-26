@@ -230,6 +230,19 @@ class CallLoggingTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context["lead"], next_lead)
 
+    def test_next_lead_cycles_through_entire_queue_before_wrapping(self):
+        second = make_lead(phone="9000055556", name="Second Student", owner=self.caller)
+        third = make_lead(phone="9000055557", name="Third Student", owner=self.caller)
+        self.client.login(username="caller3", password="pass1234")
+
+        after_first = self.client.get(reverse("telecalling:workspace"), {"skip": self.lead.pk})
+        after_second = self.client.get(reverse("telecalling:workspace"), {"skip": second.pk})
+        after_third = self.client.get(reverse("telecalling:workspace"), {"skip": third.pk})
+
+        self.assertEqual(after_first.context["lead"], second)
+        self.assertEqual(after_second.context["lead"], third)
+        self.assertEqual(after_third.context["lead"], self.lead)
+
     def test_log_call_redirects_with_current_lead_excluded(self):
         self.client.login(username="caller3", password="pass1234")
 
