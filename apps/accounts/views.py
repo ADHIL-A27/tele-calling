@@ -66,7 +66,7 @@ def team_create(request):
         if form.is_valid():
             user = form.save()
             ActivityLog.log(request.user, "create_user", target=user, description=f"Created user {user}")
-            messages.success(request, f"User {user.username} created successfully.")
+            messages.success(request, f"Caller {user.username} created successfully.")
             return redirect("accounts:team_list")
     else:
         form = StaffUserCreationForm()

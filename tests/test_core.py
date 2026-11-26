@@ -64,11 +64,15 @@ class StaffUserCreationFormTests(TestCase):
         )
 
         self.assertNotIn("college", form.fields)
+        self.assertNotIn("role", form.fields)
+        self.assertNotIn("branch", form.fields)
+        self.assertNotIn("reporting_manager", form.fields)
         self.assertNotIn("employee_code", form.fields)
         self.assertNotIn("team_name", form.fields)
         self.assertNotIn("max_active_leads", form.fields)
         self.assertTrue(form.is_valid(), form.errors)
         user = form.save()
+        self.assertEqual(user.role, Role.TELECALLER)
         self.assertEqual(user.college, self.college)
         self.assertEqual(user.telecaller_profile.max_active_leads, 200)
 

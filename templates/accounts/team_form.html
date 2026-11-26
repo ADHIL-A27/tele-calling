@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Add Employee{% endblock %}
+{% block title %}Add Caller{% endblock %}
 {% block content %}
 <div class="tw-max-w-xl">
-  <h1 class="tw-text-xl tw-font-bold tw-mb-4">Add Employee</h1>
+  <h1 class="tw-text-xl tw-font-bold tw-mb-4">Add Caller</h1>
   <div class="clay-card">
     <form method="post" novalidate>
       {% csrf_token %}
@@ -13,7 +13,7 @@
           {{ field.errors }}
         </div>
       {% endfor %}
-      <button type="submit" class="clay-button clay-button--primary tw-w-full">Create Employee</button>
+      <button type="submit" class="clay-button clay-button--primary tw-w-full">Create Caller</button>
     </form>
   </div>
 </div>
