@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from apps.accounts.models import CustomUser, Role, TelecallerProfile
+from apps.courses.models import Branch, College
 
 CLAY_INPUT_CLASS = "clay-input"
 
@@ -12,8 +13,7 @@ class ClayAuthenticationForm(AuthenticationForm):
 
 
 class StaffUserCreationForm(UserCreationForm):
-    """Used by College Admin / Telecalling Manager to create telecaller
-    and counselor accounts."""
+    """Create staff accounts for the application's single college."""
 
     employee_code = forms.CharField(required=False)
     team_name = forms.CharField(required=False)
@@ -28,7 +28,6 @@ class StaffUserCreationForm(UserCreationForm):
             "email",
             "phone_number",
             "role",
-            "college",
             "branch",
             "reporting_manager",
         )
@@ -39,28 +38,37 @@ class StaffUserCreationForm(UserCreationForm):
             "email": forms.EmailInput(attrs={"class": CLAY_INPUT_CLASS}),
             "phone_number": forms.TextInput(attrs={"class": CLAY_INPUT_CLASS}),
             "role": forms.Select(attrs={"class": CLAY_INPUT_CLASS}),
-            "college": forms.Select(attrs={"class": CLAY_INPUT_CLASS}),
             "branch": forms.Select(attrs={"class": CLAY_INPUT_CLASS}),
             "reporting_manager": forms.Select(attrs={"class": CLAY_INPUT_CLASS}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.single_college = College.objects.filter(is_active=True).order_by("pk").first()
+        self.fields["branch"].queryset = (
+            Branch.objects.filter(college=self.single_college, is_active=True)
+            if self.single_college
+            else Branch.objects.none()
+        )
         self.fields["password1"].widget.attrs["class"] = CLAY_INPUT_CLASS
         self.fields["password2"].widget.attrs["class"] = CLAY_INPUT_CLASS
 
     def save(self, commit=True):
-        user = super().save(commit=commit)
-        if commit and user.role == Role.TELECALLER:
-            TelecallerProfile.objects.get_or_create(
-                user=user,
-                defaults={
-                    "employee_code": self.cleaned_data.get("employee_code") or None,
-                    "team_name": self.cleaned_data.get("team_name") or "",
-                    "max_active_leads": self.cleaned_data.get("max_active_leads") or 200,
-                },
-            )
-        self._assign_group(user)
+        user = super().save(commit=False)
+        user.college = self.single_college
+        if commit:
+            user.save()
+            self.save_m2m()
+            if user.role == Role.TELECALLER:
+                TelecallerProfile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        "employee_code": self.cleaned_data.get("employee_code") or None,
+                        "team_name": self.cleaned_data.get("team_name") or "",
+                        "max_active_leads": self.cleaned_data.get("max_active_leads") or 200,
+                    },
+                )
+            self._assign_group(user)
         return user
 
     @staticmethod

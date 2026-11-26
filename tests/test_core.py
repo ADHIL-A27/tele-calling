@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.accounts.forms import StaffUserCreationForm
 from apps.accounts.models import CustomUser, Role
 from apps.admissions.models import AdmissionStageHistory
 from apps.assignments.models import LeadAssignment
@@ -40,6 +41,35 @@ class PhoneNormalizationTests(TestCase):
 
     def test_short_invalid_number_is_not_padded(self):
         self.assertEqual(normalize_phone_number("12"), "12")
+
+
+class StaffUserCreationFormTests(TestCase):
+    def setUp(self):
+        self.college = College.objects.create(name="Only College", code="ONLY")
+
+    def test_college_is_hidden_and_assigned_automatically(self):
+        form = StaffUserCreationForm(
+            data={
+                "username": "newcaller",
+                "first_name": "New",
+                "last_name": "Caller",
+                "email": "caller@example.com",
+                "phone_number": "9000012345",
+                "role": Role.TELECALLER,
+                "branch": "",
+                "reporting_manager": "",
+                "employee_code": "EMP-1",
+                "team_name": "Admissions",
+                "max_active_leads": 200,
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+            }
+        )
+
+        self.assertNotIn("college", form.fields)
+        self.assertTrue(form.is_valid(), form.errors)
+        user = form.save()
+        self.assertEqual(user.college, self.college)
 
 
 class ImportValidationTests(TestCase):
