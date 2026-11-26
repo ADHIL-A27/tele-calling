@@ -58,18 +58,19 @@ class StaffUserCreationFormTests(TestCase):
                 "role": Role.TELECALLER,
                 "branch": "",
                 "reporting_manager": "",
-                "employee_code": "EMP-1",
-                "team_name": "Admissions",
-                "max_active_leads": 200,
                 "password1": "StrongPass123!",
                 "password2": "StrongPass123!",
             }
         )
 
         self.assertNotIn("college", form.fields)
+        self.assertNotIn("employee_code", form.fields)
+        self.assertNotIn("team_name", form.fields)
+        self.assertNotIn("max_active_leads", form.fields)
         self.assertTrue(form.is_valid(), form.errors)
         user = form.save()
         self.assertEqual(user.college, self.college)
+        self.assertEqual(user.telecaller_profile.max_active_leads, 200)
 
 
 class ImportValidationTests(TestCase):

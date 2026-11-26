@@ -15,10 +15,6 @@ class ClayAuthenticationForm(AuthenticationForm):
 class StaffUserCreationForm(UserCreationForm):
     """Create staff accounts for the application's single college."""
 
-    employee_code = forms.CharField(required=False)
-    team_name = forms.CharField(required=False)
-    max_active_leads = forms.IntegerField(required=False, initial=200, min_value=1)
-
     class Meta(UserCreationForm.Meta):
         model = CustomUser
         fields = (
@@ -60,14 +56,7 @@ class StaffUserCreationForm(UserCreationForm):
             user.save()
             self.save_m2m()
             if user.role == Role.TELECALLER:
-                TelecallerProfile.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        "employee_code": self.cleaned_data.get("employee_code") or None,
-                        "team_name": self.cleaned_data.get("team_name") or "",
-                        "max_active_leads": self.cleaned_data.get("max_active_leads") or 200,
-                    },
-                )
+                TelecallerProfile.objects.get_or_create(user=user)
             self._assign_group(user)
         return user
 
