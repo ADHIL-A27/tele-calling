@@ -85,10 +85,10 @@
   <div>
     <div class="clay-card clay-card--compact">
       <h3 class="tw-font-bold tw-mb-2">Quick Actions</h3>
-      <a href="{% url 'telecalling:workspace' %}" class="clay-button clay-button--ghost tw-w-full tw-mb-2">
+      <a href="{% url 'telecalling:workspace' %}?skip={{ lead.pk }}" class="clay-button clay-button--primary tw-w-full tw-mb-2">
         <span class="material-symbols-outlined">skip_next</span> Next Lead
       </a>
-      <a href="{% url 'telecalling:my_leads' %}" class="clay-button clay-button--ghost tw-w-full">
+      <a href="{% url 'telecalling:my_leads' %}" class="clay-button clay-button--secondary tw-w-full">
         <span class="material-symbols-outlined">list_alt</span> My Lead List
       </a>
     </div>

@@ -75,11 +75,12 @@ def _next_lead_for(user, exclude_pk=None):
 @role_required(Role.TELECALLER)
 def workspace(request):
     lead_id = request.GET.get("lead")
+    skip_id = request.GET.get("skip")
     lead = None
     if lead_id:
         lead = StudentLead.objects.filter(pk=lead_id, current_owner=request.user).first()
     if not lead:
-        lead = _next_lead_for(request.user)
+        lead = _next_lead_for(request.user, exclude_pk=skip_id if skip_id and skip_id.isdigit() else None)
 
     form = CallLogForm()
     pending_count = StudentLead.objects.filter(
@@ -165,10 +166,11 @@ def log_call(request, pk):
                 )
 
         messages.success(request, f"Call logged: {outcome.name}")
+        return redirect(f"/calling/workspace/?skip={lead.pk}")
     else:
         messages.error(request, "Please correct the errors in the call form.")
 
-    return redirect(f"/calling/workspace/")
+    return redirect(f"/calling/workspace/?lead={lead.pk}")
 
 
 @login_required

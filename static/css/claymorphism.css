@@ -175,24 +175,35 @@ a {
 }
 
 .clay-button--primary {
-  background: linear-gradient(145deg, #a7b8f6, #8fa6f3);
+  background: linear-gradient(145deg, #4f6fd3, #3154bd);
   color: #fff;
+  border: 1px solid #2949a8;
 }
 
 .clay-button--success {
-  background: linear-gradient(145deg, #92dcb9, #7fd1ae);
-  color: #194d35;
+  background: linear-gradient(145deg, #2f9b6d, #217b55);
+  color: #fff;
+  border: 1px solid #1d6c4b;
 }
 
 .clay-button--danger {
-  background: linear-gradient(145deg, #f3aaaa, #f09898);
-  color: #6e1f1f;
+  background: linear-gradient(145deg, #d95b5b, #bd3f3f);
+  color: #fff;
+  border: 1px solid #a93434;
+}
+
+.clay-button--secondary {
+  background: #fff;
+  color: #263a67;
+  border: 2px solid #5d73a8;
+  box-shadow: 3px 3px 8px var(--clay-shadow-dark);
 }
 
 .clay-button--ghost {
-  background: transparent;
-  box-shadow: none;
-  border: 1.5px solid var(--clay-shadow-dark);
+  background: rgba(255, 255, 255, 0.82);
+  color: #263a67;
+  box-shadow: 2px 2px 6px var(--clay-shadow-dark);
+  border: 1.5px solid #8190ad;
 }
 
 .clay-button--sm {

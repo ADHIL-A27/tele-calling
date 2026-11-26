@@ -221,6 +221,25 @@ class CallLoggingTests(TestCase):
             )
         self.assertEqual(CallAttempt.objects.filter(lead=self.lead).count(), 3)
 
+    def test_next_lead_skips_current_lead(self):
+        next_lead = make_lead(phone="9000055556", name="Next Student", owner=self.caller)
+        self.client.login(username="caller3", password="pass1234")
+
+        resp = self.client.get(reverse("telecalling:workspace"), {"skip": self.lead.pk})
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context["lead"], next_lead)
+
+    def test_log_call_redirects_with_current_lead_excluded(self):
+        self.client.login(username="caller3", password="pass1234")
+
+        resp = self.client.post(
+            reverse("telecalling:log_call", args=[self.lead.pk]),
+            {"outcome": self.outcome.pk, "remarks": "Done"},
+        )
+
+        self.assertRedirects(resp, f"/calling/workspace/?skip={self.lead.pk}", fetch_redirect_response=False)
+
 
 class FollowUpTests(TestCase):
     def setUp(self):
